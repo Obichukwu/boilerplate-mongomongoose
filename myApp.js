@@ -1,54 +1,116 @@
 require('dotenv').config();
+const mongoose = require('mongoose')
 
+const mongoUri = process.env['MONGO_URI']
 
-let Person;
+mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+const Schema = mongoose.Schema;
+const personSchema = new Schema({
+  name: { type: String, required: true },
+  age: Number,
+  favoriteFoods: [String]
+});
+
+let Person = mongoose.model("Person", personSchema);
 
 const createAndSavePerson = (done) => {
-  done(null /*, data*/);
+  var obichukwu = new Person({name: "Obichukwu O.", age: 31, favoriteFoods: ["rice", "fish", "milk","noodles"]});
+
+  obichukwu.save(function(err, data) {
+    if (err) return done(err);
+    done(null, data)
+  });
 };
 
 const createManyPeople = (arrayOfPeople, done) => {
-  done(null /*, data*/);
+  Person.create(arrayOfPeople,function(err, data) {
+    if (err) return done(err);
+    done(null, data)
+  });
 };
 
 const findPeopleByName = (personName, done) => {
-  done(null /*, data*/);
+  Person.find({"name": personName}, function(err, data){
+    if (err) return done(err);
+    done(null, data)
+  });
 };
 
 const findOneByFood = (food, done) => {
-  done(null /*, data*/);
+  Person.findOne({"favoriteFoods": food}, function(err, data){
+    if (err) return done(err);
+    done(null, data)
+  });
 };
 
 const findPersonById = (personId, done) => {
-  done(null /*, data*/);
+  Person.findById(personId, function(err, data){
+    if (err) return done(err);
+    done(null, data)
+  });
 };
 
 const findEditThenSave = (personId, done) => {
   const foodToAdd = "hamburger";
-
-  done(null /*, data*/);
+  Person.findById(personId, function(err, data){
+    if (err) return done(err);
+    data.favoriteFoods.push(foodToAdd);
+    
+    data.save(function(err, data) {
+    if (err) return done(err);
+      done(null, data)
+    });
+  });
 };
 
 const findAndUpdate = (personName, done) => {
   const ageToSet = 20;
 
-  done(null /*, data*/);
+  Person.findOneAndUpdate({"name": personName}, {age: ageToSet}, {new: true}, (err, updatedDoc) => {
+    if(err) return done(err);
+    done(null, updatedDoc);
+  });
+  /* 
+  Person.findOne({"name": personName}, function(err, data){
+    if (err) return done(err);
+    data.age = ageToSet;
+    
+    data.save(function(err, data) {
+    if (err) return done(err);
+      done(null, data)
+    });
+  });
+  */
 };
 
 const removeById = (personId, done) => {
-  done(null /*, data*/);
+  Person.findByIdAndRemove(personId, function(err, data){
+    if (err) return done(err);
+    done(null, data)
+  });
 };
 
 const removeManyPeople = (done) => {
   const nameToRemove = "Mary";
 
-  done(null /*, data*/);
+  Person.deleteMany({"name": nameToRemove}, (err, data) => {
+    if(err) return done(err);
+    done(null, data);
+  });
 };
 
 const queryChain = (done) => {
   const foodToSearch = "burrito";
 
-  done(null /*, data*/);
+  Person.find({"favoriteFoods": foodToSearch})
+    .sort({"name": 1})
+    .limit(2)
+    .select({ name: 1, favoriteFoods:1 })
+    .exec(function(err, data){
+      if (err) return done(err);
+      done(null, data)
+    });
 };
 
 /** **Well Done !!**
